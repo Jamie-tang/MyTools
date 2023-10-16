@@ -14,10 +14,12 @@ namespace MergeTool
         public static string IniPath;
         public static string HexFilePath1;
         public static string CombineHexFilePath;
-        public static List<string> LineListOld;
-        public static List<string> LineListNew;
-        public static List<string> HexFile1;
-        public static List<string> HexFile2;
+        public static List<string> LineList1 = new List<string> { };
+        public static List<string> LineList2 = new List<string> { };
+        public static List<string> HexFile1 = new List<string> { };
+        public static List<string> HexFile2 = new List<string> { };
+        public static string HexFile1FirstLine = "";
+        public static string HexFile2FirstLine = "";
         public static UInt32 iniStartAddr = 0, HexFileStartAddr = 0;
         public static DataLineMessage stDataLineMessage;
         public static IniFile iniFile;
@@ -50,8 +52,6 @@ namespace MergeTool
         public void getHexFileData(string FileName, int index)
         {
             string szline = "";
-            LineListOld = new List<string> { };
-            LineListNew = new List<string> { };
             int m = 0;
             if (!File.Exists(FileName))
             {
@@ -66,14 +66,18 @@ namespace MergeTool
                     szline = HexFileReader.ReadLine();
                     if (szline != null)
                     {
-                        LineListOld.Add(szline);
-                        LineListNew.Add(szline);
+                        if(index ==1) //区别两个Hex文件
+                            LineList1.Add(szline);
+                        else
+                            LineList2.Add(szline);
                         int datatype = Parse_HexLineData(szline); //解析行，并返回数据类型
                         switch (datatype)
                         {
                             case 0x00:
-                                if (m > 0)
-                                    FillLostData(LineListNew, m);
+                                if (index == 1)
+                                    FillLostData(LineList1, m); //填补空缺数据
+                                else
+                                    FillLostData(LineList2, m); //填补空缺数据
                                 break;
                             case 0x01:
                                 break;
@@ -84,14 +88,17 @@ namespace MergeTool
                             case 0x04:
                                 if (m == 0)
                                 {
-                                    if (!ChkStart_End_AddrIsValid(szline, index))
+                                    if (!ChkStartAddrIsValid(szline, index))
                                     {
                                         return;
                                     }
                                 }
                                 break;
                             case 0x05:
-                                FillLostData(LineListNew, m);
+                                if (index == 1)
+                                    FillLostData(LineList1, m); //填补空缺数据
+                                else
+                                    FillLostData(LineList2, m); //填补空缺数据
                                 break;
                             default:
                                 Console.WriteLine("数据类型不是00， 01， 02， 03， 04， 05， 请检查Hex文件数据是否正确, 解析失败");
@@ -105,10 +112,10 @@ namespace MergeTool
                 {
                     Console.WriteLine("DataBuff总数： {0}", i + 1);
                 }
-                if (index == 1)
-                    HexFile1 = LineListNew;
-                else
-                    HexFile2 = LineListNew;
+                //if (index == 1)
+                //    HexFile1 = LineListNew;
+                //else
+                //    HexFile2 = LineListNew;
             }
         }
         public byte Parse_HexLineData(string szLine)
@@ -152,23 +159,36 @@ namespace MergeTool
             int CurrentDataAddr, PreDataAddr;
             byte FillData = 0xFF;
             string szData = "";
+
             CurrentDataAddr = int.Parse(LineList[index].Substring(3, 4), NumberStyles.HexNumber);
             PreDataAddr = int.Parse(LineList[index - 1].Substring(3, 4), NumberStyles.HexNumber);
+
             PreDataLen = int.Parse(LineList[index - 1].Substring(1, 2), NumberStyles.HexNumber);
             CurrentDataLen = int.Parse(LineList[index].Substring(1, 2), NumberStyles.HexNumber);
             szData = LineList[index].Substring(9, LineList[index].Length - 11);
+
             byte[] dataBuffer = new byte[CurrentDataLen];
             int datatype = Parse_HexLineData(LineList[index]); //解析行，并返回数据类型
 
 
-            if (index > 1 && datatype == 0x00)
+            if (datatype == 0x00)
             {
-                if ((CurrentDataAddr - PreDataAddr) != PreDataLen)
+                if (index > 1 && (CurrentDataAddr - PreDataAddr) > CurrentDataLen)
                 {
-                    var FillNum = Math.Abs((CurrentDataAddr - PreDataAddr - PreDataLen));
+                    var FillNum = CurrentDataAddr - PreDataAddr - PreDataLen; //两组line的Offset的差值
+                    if(FillNum <= 0)
+                    {
+                        Console.WriteLine("第{0}行, {1}, 此行偏移量与上一行的偏移量的差，小于或等于0, 请检查数据是否正确", index, LineList[index]);
+                    }
                     for (int i = 0; i < FillNum; i++)
                     {
                         DataBuff.Add(FillData);
+                    }
+
+                    for (int i = 0; i < CurrentDataLen; i++)  //填充完FF之后，解析当前Lines数据
+                    {
+                        dataBuffer[i] = byte.Parse(szData.Substring(i * 2, 2), NumberStyles.HexNumber);
+                        DataBuff.Add(dataBuffer[i]);
                     }
                 }
                 else
@@ -180,29 +200,31 @@ namespace MergeTool
                     }
                 }
             }
-            else if (index == 1) //只解析首地址数据
+            else if (datatype == 0x05) //只解析首地址数据
             {
-                for (int i = 0; i < CurrentDataLen; i++)
-                {
-                    dataBuffer[i] = byte.Parse(szData.Substring(i * 2, 2), NumberStyles.HexNumber);
-                    DataBuff.Add(dataBuffer[i]);
-                }
-            }
-            else
-            {
-                int  MaxAddr = 0xFFFF;
+                int MaxAddr = 0xFFFF;
                 var FillNum = Math.Abs((MaxAddr - PreDataAddr - PreDataLen));
                 for (int i = 0; i < FillNum; i++)
                 {
                     DataBuff.Add(FillData);
                 }
+                DataBuff.Add(FillData);
+            }
+            else
+            {
+                //for (int i = 0; i < CurrentDataLen; i++)
+                //{
+                //    dataBuffer[i] = byte.Parse(szData.Substring(i * 2, 2), NumberStyles.HexNumber);
+                //    DataBuff.Add(dataBuffer[i]);
+                //}
+                ;
             }
         }
         /// <summary>
         /// 检查文件开始地址是否正确
         /// </summary>
         /// <param name="FirstLine">Hex文件首行</param>
-        public  bool ChkStart_End_AddrIsValid(string FirstLine, int index)
+        public  bool ChkStartAddrIsValid(string FirstLine, int index)
         {
             stDataLineMessage.HighAddr = UInt32.Parse(FirstLine.Substring(9, 4), NumberStyles.HexNumber);
             stDataLineMessage.LowAddr = UInt32.Parse(FirstLine.Substring(3, 4), NumberStyles.HexNumber);
@@ -225,52 +247,30 @@ namespace MergeTool
             return true;
         }
 
-        public  void MergeHexFile(List<string> LineList1, List<string> LineList2, string SaveMergeHexPath)
+        public  void MergeHexFile(List<string> List1,List<string>List2, string SaveMergeHexPath)
         {
-            List<string> ListBuffer = new List<string> { };
-            ResizeDataLength(LineList1);
-            int type = 0;
-            if(HexFile1StartAddr < HexFile2StartAddr) //如果Hex文件1的起始地址比文件2的起始地址地，则在先
+            List<string> MergeHexFile = new List<string> { };
+            int HexFile1StartAddr = 0, HexFile2StartAddr = 0;
+            HexFile1StartAddr = int.Parse(List1[0].Substring(9, 4), NumberStyles.HexNumber) << 16;
+            HexFile2StartAddr = int.Parse(List2[0].Substring(9, 4), NumberStyles.HexNumber);
+            if(HexFile1StartAddr < HexFile2StartAddr)
             {
-                for (int i = 0; i < LineList1.Count; i++)
+                MergeHexFile.Add(List1[0]);
+                for (int i=0; i< HexFile1.Count; i++)
                 {
-                    type = Parse_HexLineData(LineList1[LineList1.Count - 1]);
-                    if (type == 0x01 || type == 0x05)
-                    {
-                        LineList1.RemoveAt(LineList1.Count - 1);
-                    }
+                    MergeHexFile.Add(HexFile1[i]);
                 }
-                ListBuffer = LineList1;
-                for (int i = 0; i < LineList2.Count; i++)
+                MergeHexFile.Add(List2[0]);
+                for (int i = 0; i < HexFile1.Count; i++)
                 {
-                    ListBuffer.Add(LineList2[i]);
+                    MergeHexFile.Add(HexFile2[i]);
                 }
             }
-            else
-            {
-                for (int i = 0; i < LineList2.Count; i++)
-                {
-                    type = Parse_HexLineData(LineList1[LineList2.Count - 1]);
-                    if (type == 0x01 || type == 0x05)
-                    {
-                        LineList2.RemoveAt(LineList2.Count - 1);
-                    }
-                }
-                ListBuffer = LineList2;
-                for (int i = 0; i < LineList1.Count; i++)
-                {
-                    ListBuffer.Add(LineList1[i]);
-                }
-            }
-            ListBuffer.RemoveAt(ListBuffer.Count - 2);
-            //for (int i = 0; i < ListBuffer.Count; i++)
-            //{
-            //    Console.WriteLine("此时文件Line为： {0}, 数据为: {1}", i + 1, ListBuffer[i]);
-            //}
+
             StreamWriter swCombineHex = new StreamWriter(SaveMergeHexPath);
-            for(int i = 0; i < ListBuffer.Count; i++)
+            for(int i = 0; i < MergeHexFile.Count; i++)
             {
-                swCombineHex.WriteLine(ListBuffer[i]);
+                swCombineHex.WriteLine(MergeHexFile[i]);
             }
             swCombineHex.Close();
             Console.WriteLine();
@@ -279,35 +279,31 @@ namespace MergeTool
         public void ResizeDataLength(List<string> LineList)
         {
             string DataStr = "", LineStr = "";
-            int DataLen, i, DataType, len1, len2, counter = 1 ;
+            int DataLen, i, j, DataType, len1, len2, counter = 1 ;
             int CombineLineCharNum = int.Parse(iniFile.szCombineFileLineCharNum);
             byte[] dataBuffer = new byte[CombineLineCharNum]; //根据ini配置的长度来规定长度
-            DataBuff = new List<byte> {  };
-            for (i = 1; i < LineList.Count - 2; i++)
+            int Offset = 0x0000;
+            string lineStr = ":", str = "", s;
+            
+            for (i = 0; i < DataBuff.Count / CombineLineCharNum; i++)
             {
-                LineStr = LineList[i];
-                DataLen = int.Parse(LineList[i].Substring(1, 2), NumberStyles.HexNumber);
-                DataType = byte.Parse(LineStr.Substring(7,2), NumberStyles.HexNumber);
+                lineStr = ":" +  string.Format("{0:X2}", CombineLineCharNum) + String.Format("{0:X4}", Offset) + "00";
+                for (j = 0; j < CombineLineCharNum; j++)
+                {
+                    s = string.Format("{0:X2}", DataBuff[i * CombineLineCharNum + j]);
+                    lineStr += s;
+                }
+                Offset += CombineLineCharNum;
 
-                len1 = int.Parse(LineList[i].Substring(3, 4), NumberStyles.HexNumber);
-                len2 = int.Parse(LineList[i - 1].Substring(3, 4), NumberStyles.HexNumber);
-                if (DataType == 0x00)
-                {
-                    DataStr = LineList[i].Substring(9, DataLen * 2);
-                    for(int j = 0; j < DataLen; j++)
-                    {
-                        dataBuffer[j] = byte.Parse(DataStr.Substring(j * 2, 2), NumberStyles.HexNumber);
-                        DataBuff.Add(dataBuffer[j]);
-                        counter++;
-                        Console.WriteLine("counter: {0}", counter);
-                    }  
-                }
-                if((len1-len2) != DataLen)
-                {
-                    ;
-                }
-                Console.WriteLine("Line: {0}, data: {1}, 共{2}组", i, LineStr, DataBuff.Count / DataLen);
+                caclChkSum(lineStr,out str);
+                lineStr = str;
+                LineList.Add(lineStr);
             }
+        }
+
+        public void ParseHexToBinFile()
+        {
+
         }
 
         public static void caclChkSum(in string inLine, out string outStr)
@@ -315,7 +311,7 @@ namespace MergeTool
             byte[] Arr;
             byte checkSum = 0;
             UInt64 Sum = 0;
-            string str = inLine.Substring(1, inLine.Length - 3);
+            string str = inLine.Substring(1, inLine.Length - 1);
             int len = str.Length;
             Arr = new byte[len / 2];
             for (int i = 0; i < len / 2; i++)

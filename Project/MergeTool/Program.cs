@@ -45,10 +45,14 @@ namespace MergeTool
                 iniFile.ReadIniFlie(IniPath);
                 HexFilePath1 = Environment.CurrentDirectory + "\\" + iniFile.szSourceFile1Name;
                 hexFile1.getHexFileData(HexFilePath1, 1);
+
                 HexFilePath2 = Environment.CurrentDirectory + "\\" + iniFile.szSourceFile2Name;
                 hexFile1.getHexFileData(HexFilePath2, 2);
+
                 CombineHexFilePath = Environment.CurrentDirectory + "\\" + iniFile.szCombineFileName;
-                hexFile1.MergeHexFile(HexFile.HexFile1, HexFile.HexFile2, CombineHexFilePath);
+                hexFile1.ResizeDataLength(HexFile.HexFile1);
+                hexFile1.ResizeDataLength(HexFile.HexFile2);
+                hexFile1.MergeHexFile(HexFile.LineList1, HexFile.LineList2, CombineHexFilePath);
             }
         }
     }
