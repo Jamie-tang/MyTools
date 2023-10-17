@@ -25,12 +25,13 @@ namespace MergeTool
         public static string HexFilePath1;
         public static string HexFilePath2;
         public static string CombineHexFilePath;
-        public static UInt32 iniStartAddr = 0, HexFileStartAddr = 0;
+        public static string CombineBinFilePath;
+        public static UInt32 u32iniStartAddr = 0, u32HexFileStartAddr = 0;
         public static DataLineMessage stDataLineMessage;
 
         static void Main(string[] args)
         {
-            HexFile hexFile1 = new HexFile();
+            HexFile hexFile = new HexFile();
             IniFile iniFile = new IniFile();
             stDataLineMessage = new DataLineMessage();
             IniPath = Environment.CurrentDirectory + "\\Config.ini";
@@ -43,16 +44,22 @@ namespace MergeTool
             else
             {
                 iniFile.ReadIniFlie(IniPath);
-                HexFilePath1 = Environment.CurrentDirectory + "\\" + iniFile.szSourceFile1Name;
-                hexFile1.getHexFileData(HexFilePath1, 1);
 
+                HexFilePath1 = Environment.CurrentDirectory + "\\" + iniFile.szSourceFile1Name;
+                hexFile.getHexFileData(HexFilePath1, 1);
                 HexFilePath2 = Environment.CurrentDirectory + "\\" + iniFile.szSourceFile2Name;
-                hexFile1.getHexFileData(HexFilePath2, 2);
+                hexFile.getHexFileData(HexFilePath2, 2);
+
+                CombineBinFilePath = Environment.CurrentDirectory + "\\" + iniFile.szBinFileFileName;
+                hexFile.ParseHexToBinFile(HexFile.LineList1, HexFile.LineList2, CombineBinFilePath);
+
+                hexFile.ResizeDataLength(HexFile.HexFile1, 1);  //Resize数据长度并添加checksum到Line尾，  且计算bin文件的Crc16，并添加到指定位置
+                hexFile.ResizeDataLength(HexFile.HexFile2, 2);  //Resize数据长度并添加checksum到Line尾，  且计算bin文件的Crc16，并添加到指定位置
 
                 CombineHexFilePath = Environment.CurrentDirectory + "\\" + iniFile.szCombineFileName;
-                hexFile1.ResizeDataLength(HexFile.HexFile1);
-                hexFile1.ResizeDataLength(HexFile.HexFile2);
-                hexFile1.MergeHexFile(HexFile.LineList1, HexFile.LineList2, CombineHexFilePath);
+                hexFile.MergeHexFile(HexFile.LineList1, HexFile.LineList2, CombineHexFilePath); // 生成合并Hex文件
+
+
             }
         }
     }

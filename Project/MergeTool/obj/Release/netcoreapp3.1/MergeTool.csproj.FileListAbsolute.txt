@@ -1,0 +1,14 @@
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\bin\Release\netcoreapp3.1\MergeTool.exe
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\bin\Release\netcoreapp3.1\MergeTool.deps.json
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\bin\Release\netcoreapp3.1\MergeTool.runtimeconfig.json
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\bin\Release\netcoreapp3.1\MergeTool.runtimeconfig.dev.json
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\bin\Release\netcoreapp3.1\MergeTool.dll
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\bin\Release\netcoreapp3.1\MergeTool.pdb
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.csproj.AssemblyReference.cache
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.AssemblyInfoInputs.cache
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.AssemblyInfo.cs
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.csproj.CoreCompileInputs.cache
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.dll
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.pdb
+C:\Users\IPC209\Desktop\Merge_Tool\Project\MergeTool\obj\Release\netcoreapp3.1\MergeTool.genruntimeconfig.cache

@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.33801.447
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombineTool", "CombineTool\CombineTool.csproj", "{8FF79D3D-A699-4B65-AADB-8756874226ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MergeTool", "MergeTool\MergeTool.csproj", "{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeTool", "MergeTool\MergeTool.csproj", "{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombineHexTool", "CombineHexTool\CombineHexTool.csproj", "{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,14 @@ Global
 		{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}.Release|x86.ActiveCfg = Release|Any CPU
 		{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}.Release|x86.Build.0 = Release|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|x86.Build.0 = Debug|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|x86.ActiveCfg = Release|Any CPU
+		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

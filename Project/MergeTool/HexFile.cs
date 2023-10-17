@@ -14,18 +14,26 @@ namespace MergeTool
         public static string IniPath;
         public static string HexFilePath1;
         public static string CombineHexFilePath;
-        public static List<string> LineList1 = new List<string> { };
-        public static List<string> LineList2 = new List<string> { };
-        public static List<string> HexFile1 = new List<string> { };
-        public static List<string> HexFile2 = new List<string> { };
         public static string HexFile1FirstLine = "";
         public static string HexFile2FirstLine = "";
-        public static UInt32 iniStartAddr = 0, HexFileStartAddr = 0;
+
+        public static List<string> LineList1 = new List<string> { }; //原始的Hex1文件内容
+        public static List<string> LineList2 = new List<string> { };  //原始的Hex2文件内容
+        public static List<string> HexFile1 = new List<string> { }; //已处理的Hex1文件内容， 尚未计算checksum
+        public static List<string> HexFile2 = new List<string> { }; //已处理的Hex1文件内容,   尚未计算checksum
+        //public static List<byte> DataBuff = new List<byte> { };
+        public static List<byte> HexFile1DataBuff = new List<byte> { }; //hex1文件65536个字节的数据缓存
+        public static List<byte> HexFile2DataBuff = new List<byte> { }; //hex2文件65536个字节的数据缓存
         public static DataLineMessage stDataLineMessage;
         public static IniFile iniFile;
-        public static UInt32 HexFile1StartAddr;
-        public static UInt32 HexFile2StartAddr;
-        public static List<byte> DataBuff = new List<byte> { };
+
+        public static UInt32 u32iniStartAddr = 0, u32HexFileStartAddr = 0;
+        public static UInt32 u32HexFile1StartAddr;
+        public static UInt32 u32HexFile2StartAddr;
+
+        byte CheckSumHighByte = 0;
+        byte CheckSumLowByte = 0;
+
         public HexFile()
         {
             iniFile = new IniFile();
@@ -75,9 +83,9 @@ namespace MergeTool
                         {
                             case 0x00:
                                 if (index == 1)
-                                    FillLostData(LineList1, m); //填补空缺数据
+                                    FillLostData(LineList1,ref HexFile1DataBuff, m); //填补空缺数据, 并将所有数据添加到缓冲区
                                 else
-                                    FillLostData(LineList2, m); //填补空缺数据
+                                    FillLostData(LineList2,ref HexFile2DataBuff, m); //填补空缺数据, 并将所有数据添加到缓冲区
                                 break;
                             case 0x01:
                                 break;
@@ -96,9 +104,9 @@ namespace MergeTool
                                 break;
                             case 0x05:
                                 if (index == 1)
-                                    FillLostData(LineList1, m); //填补空缺数据
+                                    FillLostData(LineList1, ref HexFile1DataBuff, m); //填补空缺数据
                                 else
-                                    FillLostData(LineList2, m); //填补空缺数据
+                                    FillLostData(LineList2, ref HexFile2DataBuff, m); //填补空缺数据
                                 break;
                             default:
                                 Console.WriteLine("数据类型不是00， 01， 02， 03， 04， 05， 请检查Hex文件数据是否正确, 解析失败");
@@ -108,10 +116,6 @@ namespace MergeTool
                         //Console.WriteLine("此时文件Line为： {0}", m);
                     }
                 } while (szline != null);
-                for (int i = 0; i < DataBuff.Count; i++)
-                {
-                    Console.WriteLine("DataBuff总数： {0}", i + 1);
-                }
                 //if (index == 1)
                 //    HexFile1 = LineListNew;
                 //else
@@ -153,7 +157,7 @@ namespace MergeTool
         /// </summary>
         /// <param name="LineList">String类型集合</param>
         /// <returns></returns>
-        public void FillLostData(List<string> LineList, int index)
+        public void FillLostData(List<string> LineList, ref List<byte> DataBuff, int index)
         {
             int PreDataLen = 0, CurrentDataLen = 0;
             int CurrentDataAddr, PreDataAddr;
@@ -175,12 +179,12 @@ namespace MergeTool
             {
                 if (index > 1 && (CurrentDataAddr - PreDataAddr) > CurrentDataLen)
                 {
-                    var FillNum = CurrentDataAddr - PreDataAddr - PreDataLen; //两组line的Offset的差值
-                    if(FillNum <= 0)
+                    var FillNum = CurrentDataAddr - PreDataAddr; //两组line的Offset的差值
+                    if (FillNum <= 0)
                     {
-                        Console.WriteLine("第{0}行, {1}, 此行偏移量与上一行的偏移量的差，小于或等于0, 请检查数据是否正确", index, LineList[index]);
+                        Console.WriteLine("此Hex文件第{0}行, {1}, 此行偏移量与上一行的偏移量的差，小于或等于0, 请检查数据是否正确", index, LineList[index]);
                     }
-                    for (int i = 0; i < FillNum; i++)
+                    for (int i = 0; i < FillNum - PreDataLen; i++)
                     {
                         DataBuff.Add(FillData);
                     }
@@ -208,7 +212,7 @@ namespace MergeTool
                 {
                     DataBuff.Add(FillData);
                 }
-                DataBuff.Add(FillData);
+                DataBuff.Add(FillData); //共0x10000个数
             }
             else
             {
@@ -231,82 +235,187 @@ namespace MergeTool
             stDataLineMessage.HexStartAddr = UInt32.Parse(FirstLine.Substring(9, 4) + FirstLine.Substring(3, 4), NumberStyles.HexNumber);
             if (index == 1)
             {
-                iniStartAddr = UInt32.Parse(iniFile.szSourceFile1StartAddr, NumberStyles.HexNumber);
-                HexFile1StartAddr = stDataLineMessage.HexStartAddr;
+                u32iniStartAddr = UInt32.Parse(iniFile.szSourceFile1StartAddr, NumberStyles.HexNumber);
+                u32HexFile1StartAddr = stDataLineMessage.HexStartAddr;
             }
             else
             {
-                iniStartAddr = UInt32.Parse(iniFile.szSourceFile2StartAddr, NumberStyles.HexNumber);
-                HexFile2StartAddr = stDataLineMessage.HexStartAddr;
+                u32iniStartAddr = UInt32.Parse(iniFile.szSourceFile2StartAddr, NumberStyles.HexNumber);
+                u32HexFile2StartAddr = stDataLineMessage.HexStartAddr;
             }
-            if (stDataLineMessage.HexStartAddr < iniStartAddr)
+            if (stDataLineMessage.HexStartAddr < u32iniStartAddr)
             {
-                Console.WriteLine("Hex文件中的开始地址小于ini文件设置的开始地址, ini配置中的地址:0x{0}, Hex文件中读取到的起始地址:0x{1}", String.Format("{0:X8}", iniStartAddr), String.Format("{0:X8}", stDataLineMessage.HexStartAddr));
+                Console.WriteLine("Hex文件中的开始地址小于ini文件设置的开始地址, ini配置中的地址:0x{0}, Hex文件中读取到的起始地址:0x{1}", String.Format("{0:X8}", u32iniStartAddr), String.Format("{0:X8}", stDataLineMessage.HexStartAddr));
                 return false;
             }
             return true;
         }
 
-        public  void MergeHexFile(List<string> List1,List<string>List2, string SaveMergeHexPath)
+        public void ResizeDataLength(List<string> LineList, int Index)
         {
-            List<string> MergeHexFile = new List<string> { };
-            int HexFile1StartAddr = 0, HexFile2StartAddr = 0;
-            HexFile1StartAddr = int.Parse(List1[0].Substring(9, 4), NumberStyles.HexNumber) << 16;
-            HexFile2StartAddr = int.Parse(List2[0].Substring(9, 4), NumberStyles.HexNumber);
-            if(HexFile1StartAddr < HexFile2StartAddr)
-            {
-                MergeHexFile.Add(List1[0]);
-                for (int i=0; i< HexFile1.Count; i++)
-                {
-                    MergeHexFile.Add(HexFile1[i]);
-                }
-                MergeHexFile.Add(List2[0]);
-                for (int i = 0; i < HexFile1.Count; i++)
-                {
-                    MergeHexFile.Add(HexFile2[i]);
-                }
-            }
-
-            StreamWriter swCombineHex = new StreamWriter(SaveMergeHexPath);
-            for(int i = 0; i < MergeHexFile.Count; i++)
-            {
-                swCombineHex.WriteLine(MergeHexFile[i]);
-            }
-            swCombineHex.Close();
-            Console.WriteLine();
-        }
-
-        public void ResizeDataLength(List<string> LineList)
-        {
-            string DataStr = "", LineStr = "";
-            int DataLen, i, j, DataType, len1, len2, counter = 1 ;
+            int i, j;
             int CombineLineCharNum = int.Parse(iniFile.szCombineFileLineCharNum);
             byte[] dataBuffer = new byte[CombineLineCharNum]; //根据ini配置的长度来规定长度
             int Offset = 0x0000;
             string lineStr = ":", str = "", s;
-            
-            for (i = 0; i < DataBuff.Count / CombineLineCharNum; i++)
-            {
-                lineStr = ":" +  string.Format("{0:X2}", CombineLineCharNum) + String.Format("{0:X4}", Offset) + "00";
-                for (j = 0; j < CombineLineCharNum; j++)
-                {
-                    s = string.Format("{0:X2}", DataBuff[i * CombineLineCharNum + j]);
-                    lineStr += s;
-                }
-                Offset += CombineLineCharNum;
+            int CombineHexChkSumAddr = int.Parse(iniFile.szCombineFileCheckSumAddr);
+            int u32HexFile1StartAddr = 0, u32HexFile2StartAddr = 0;
+            u32HexFile1StartAddr = int.Parse(LineList1[0].Substring(9, 4), NumberStyles.HexNumber) << 0x10;
+            u32HexFile2StartAddr = int.Parse(LineList2[0].Substring(9, 4), NumberStyles.HexNumber) << 0x10;
 
-                caclChkSum(lineStr,out str);
-                lineStr = str;
-                LineList.Add(lineStr);
+            if (u32HexFile1StartAddr > u32HexFile2StartAddr)
+            {
+                HexFile1DataBuff[CombineHexChkSumAddr] = CheckSumLowByte;
+                HexFile1DataBuff[CombineHexChkSumAddr + 1] = CheckSumHighByte;
+            }
+            else
+            {
+                HexFile2DataBuff[CombineHexChkSumAddr] = CheckSumLowByte;
+                HexFile2DataBuff[CombineHexChkSumAddr + 1] = CheckSumHighByte;
+            }
+
+            if (Index ==1)
+            {
+
+                for (i = 0; i < HexFile1DataBuff.Count / CombineLineCharNum; i++)
+                {
+                    lineStr = ":" + string.Format("{0:X2}", CombineLineCharNum) + String.Format("{0:X4}", Offset) + "00";
+                    for (j = 0; j < CombineLineCharNum; j++)
+                    {
+                        s = string.Format("{0:X2}", HexFile1DataBuff[i * CombineLineCharNum + j]);
+                        lineStr += s;
+                    }
+                    Offset += CombineLineCharNum;
+                    caclHexFileChkSum(lineStr, out str);
+                    lineStr = str;
+                    LineList.Add(lineStr);
+                }
+            }
+            else
+            {
+                for (i = 0; i < HexFile2DataBuff.Count / CombineLineCharNum; i++)
+                {
+                    lineStr = ":" + string.Format("{0:X2}", CombineLineCharNum) + String.Format("{0:X4}", Offset) + "00";
+                    for (j = 0; j < CombineLineCharNum; j++)
+                    {
+                        s = string.Format("{0:X2}", HexFile2DataBuff[i * CombineLineCharNum + j]);
+                        lineStr += s;
+                    }
+                    Offset += CombineLineCharNum;
+
+                    caclHexFileChkSum(lineStr, out str);
+                    lineStr = str;
+                    LineList.Add(lineStr);
+                }
+            }
+
+        }
+        public void MergeHexFile(List<string> List1, List<string> List2, string SaveMergeHexPath)
+        {
+            List<string> MergeHexFile = new List<string> { };
+            int u32HexFile1StartAddr = 0, u32HexFile2StartAddr = 0;
+            u32HexFile1StartAddr = int.Parse(List1[0].Substring(9, 4), NumberStyles.HexNumber) << 0x10;
+            u32HexFile2StartAddr = int.Parse(List2[0].Substring(9, 4), NumberStyles.HexNumber) << 0x10;
+            if (u32HexFile1StartAddr < u32HexFile2StartAddr)
+            {
+                MergeHexFile.Add(List1[0]);
+                for (int i = 0; i < HexFile1.Count; i++)
+                {
+                    MergeHexFile.Add(HexFile1[i]);
+                }
+                MergeHexFile.Add(List2[0]);
+                for (int i = 0; i < HexFile2.Count; i++)
+                {
+                    MergeHexFile.Add(HexFile2[i]);
+                }
+            }
+            else
+            {
+                MergeHexFile.Add(List2[0]);
+                for (int i = 0; i < HexFile2.Count; i++)
+                {
+                    MergeHexFile.Add(HexFile2[i]);
+                }
+                MergeHexFile.Add(List1[0]);
+                for (int i = 0; i < HexFile1.Count; i++)
+                {
+                    MergeHexFile.Add(HexFile1[i]);
+                }
+            }
+
+            StreamWriter swCombineHex = new StreamWriter(SaveMergeHexPath);
+            for (int i = 0; i < MergeHexFile.Count; i++)
+            {
+                swCombineHex.WriteLine(MergeHexFile[i]);
+            }
+            swCombineHex.Close();
+            Console.WriteLine("已完成合并");
+        }
+        public void ParseHexToBinFile(List<string> List1, List<string> List2, string SaveMergeBinPath)
+        {
+            UInt16 binCheckSum = 0;
+            int u32HexFile1StartAddr = 0, u32HexFile2StartAddr = 0;
+            u32HexFile1StartAddr = int.Parse(List1[0].Substring(9, 4), NumberStyles.HexNumber) << 0x10;
+            u32HexFile2StartAddr = int.Parse(List2[0].Substring(9, 4), NumberStyles.HexNumber) << 0x10;
+            FileStream fs = new FileStream(SaveMergeBinPath, FileMode.Create, FileAccess.Write);
+            BinaryWriter bwCombinBin = new BinaryWriter(fs);
+            if (u32HexFile1StartAddr < u32HexFile2StartAddr)
+            {
+                binCheckSum = CalcBinFileCrc16();
+                CheckSumLowByte = (byte)(binCheckSum & 0xFF);
+                CheckSumHighByte = (byte)((binCheckSum >> 0x08) & 0xFF);
+                HexFile1DataBuff[0] = CheckSumLowByte;
+                HexFile1DataBuff[1] = CheckSumHighByte;
+                for (int i = 0; i < HexFile2DataBuff.Count; i++)
+                {
+                    bwCombinBin.Write(HexFile2DataBuff[i]);
+                    //清除缓冲区的内容，将缓冲区中的内容写入到文件中
+                    bwCombinBin.Flush();
+                }
+                bwCombinBin.Close();
+                fs.Close();
+            }
+            else
+            {
+                binCheckSum = CalcBinFileCrc16();
+                CheckSumLowByte = (byte)(binCheckSum & 0xFF);
+                CheckSumHighByte = (byte)((binCheckSum >> 0x08) & 0xFF);
+                HexFile1DataBuff[0] = CheckSumLowByte;
+                HexFile1DataBuff[1] = CheckSumHighByte;
+                for (int i = 0; i < HexFile1DataBuff.Count; i++)
+                {
+                    bwCombinBin.Write(HexFile1DataBuff[i]);
+                    //清除缓冲区的内容，将缓冲区中的内容写入到文件中
+                    bwCombinBin.Flush();
+                }
+                bwCombinBin.Close();
+                fs.Close();
             }
         }
 
-        public void ParseHexToBinFile()
+        public UInt16 CalcBinFileCrc16()
         {
-
+            UInt16 u16Tmp = 0;
+            for (int i = 2; i < HexFile1DataBuff.Count; i++)
+            {
+                u16Tmp ^= HexFile1DataBuff[i];
+                for (byte j = 0; j < 8; j++)
+                {
+                    if ((u16Tmp & 0x0001) != 0)
+                    {
+                        u16Tmp >>= 1;
+                        u16Tmp ^= 0xA001;
+                    }
+                    else
+                    {
+                        u16Tmp >>= 1;
+                    }
+                }
+            }
+            return u16Tmp;
         }
 
-        public static void caclChkSum(in string inLine, out string outStr)
+        public static void caclHexFileChkSum(in string inLine, out string outStr)
         {
             byte[] Arr;
             byte checkSum = 0;

@@ -22,7 +22,7 @@ namespace MergeTool
         public string szBinFileStartAddr;
         public string szBinFileEndAddr;
         public string szBinFileCheckSumAddr;
-        public string szBinFileLineCharNum;
+        public string szBinFileFileName;
         /// 写入INI文件
         /// </summary>
         /// <param name="section">节点名称[如[TypeName]]</param>
@@ -63,7 +63,7 @@ namespace MergeTool
             szBinFileStartAddr = IniReadKey(iniFile, section, "BinFileStartAddr");
             szBinFileEndAddr = IniReadKey(iniFile, section, "BinFileEndAddr");
             szBinFileCheckSumAddr = IniReadKey(iniFile, section, "BinFileCheckSumAddr");
-            szBinFileLineCharNum = IniReadKey(iniFile, section, "BinFileLineCharNum");
+            szBinFileFileName = IniReadKey(iniFile, section, "BinFileLineFileName");
         }
 
         public void WriteIniFile(string iniFile)
@@ -83,7 +83,7 @@ namespace MergeTool
             IniWriteKey(iniFile, section, "BinFileStartAddr", szBinFileStartAddr);
             IniWriteKey(iniFile, section, "BinFileEndAddr", szBinFileEndAddr);
             IniWriteKey(iniFile, section, "BinFileCheckSumAddr", szBinFileCheckSumAddr);
-            IniWriteKey(iniFile, section, "BinFileLineCharNum", szBinFileLineCharNum);
+            IniWriteKey(iniFile, section, "BinFileLineFileName", szBinFileFileName);
         }
         
         public string IniReadKey(string iniFile, string Section, string key)//read from ini file
