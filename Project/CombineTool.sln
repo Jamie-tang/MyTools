@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombineTool", "CombineTool\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeTool", "MergeTool\MergeTool.csproj", "{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombineHexTool", "CombineHexTool\CombineHexTool.csproj", "{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombineHexTool", "CombineHexTool\CombineHexTool.csproj", "{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,14 +31,14 @@ Global
 		{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}.Release|x86.ActiveCfg = Release|Any CPU
 		{15AB51AA-CCEF-43D3-B984-7D1E88B7B03A}.Release|x86.Build.0 = Release|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Debug|x86.Build.0 = Debug|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|x86.ActiveCfg = Release|Any CPU
-		{7E87BDB2-4A4D-4CD9-88AF-BF171E60F225}.Release|x86.Build.0 = Release|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Debug|x86.Build.0 = Debug|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Release|x86.ActiveCfg = Release|Any CPU
+		{BBC3B843-9F74-4EA7-81E2-399DEC9A8E98}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

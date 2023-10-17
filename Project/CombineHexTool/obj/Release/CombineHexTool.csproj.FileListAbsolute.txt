@@ -1,0 +1,7 @@
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\bin\Release\CombineHexTool.exe.config
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\bin\Release\CombineHexTool.exe
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\bin\Release\CombineHexTool.pdb
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\obj\Release\CombineHexTool.csproj.AssemblyReference.cache
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\obj\Release\CombineHexTool.csproj.CoreCompileInputs.cache
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\obj\Release\CombineHexTool.exe
+C:\Users\IPC209\Desktop\Merge_Tool\Project\CombineHexTool\obj\Release\CombineHexTool.pdb
