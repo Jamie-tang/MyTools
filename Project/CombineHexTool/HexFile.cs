@@ -364,8 +364,6 @@ namespace CombineHexTool
                 binCheckSum = CalcBinFileCrc16();
                 CheckSumLowByte = (byte)(binCheckSum & 0xFF);
                 CheckSumHighByte = (byte)((binCheckSum >> 0x08) & 0xFF);
-                HexFile1DataBuff[0] = CheckSumLowByte;
-                HexFile1DataBuff[1] = CheckSumHighByte;
                 for (int i = 0; i < HexFile2DataBuff.Count; i++)
                 {
                     bwCombinBin.Write(HexFile2DataBuff[i]);
@@ -380,8 +378,6 @@ namespace CombineHexTool
                 binCheckSum = CalcBinFileCrc16();
                 CheckSumLowByte = (byte)(binCheckSum & 0xFF);
                 CheckSumHighByte = (byte)((binCheckSum >> 0x08) & 0xFF);
-                HexFile1DataBuff[0] = CheckSumLowByte;
-                HexFile1DataBuff[1] = CheckSumHighByte;
                 for (int i = 0; i < HexFile1DataBuff.Count; i++)
                 {
                     bwCombinBin.Write(HexFile1DataBuff[i]);
